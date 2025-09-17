@@ -1,0 +1,18 @@
+package main
+
+import (
+	"log"
+	"net/http"
+	"week3-chat-app/handlers"
+)
+
+func main() {
+	http.HandleFunc("/ws", handlers.WebSocketHandler)
+	http.HandleFunc("/friends/add", handlers.AddFriendHandler)
+	http.HandleFunc("/friends/remove", handlers.UnfriendHandler)
+	http.HandleFunc("/friends/list", handlers.ListFriendsHandler)
+	http.HandleFunc("/friends/online", handlers.OnlineFriendsHandler)
+
+	log.Println("Server running at :8080")
+	http.ListenAndServe(":8080", nil)
+}
