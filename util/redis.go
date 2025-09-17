@@ -16,9 +16,9 @@ func InitRedis() {
 	})
 	_, err := Rdb.Ping(ctx).Result()
 	if err != nil {
-		panic("❌ Redis not connected")
+		panic("Redis not connected")
 	}
-	fmt.Println("✅ Redis connected")
+	fmt.Println("Redis connected")
 }
 
 // Presence tracking
