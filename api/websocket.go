@@ -55,7 +55,7 @@ func readMessages(conn *websocket.Conn) {
 
 		// Check rate limit
 		if !util.AllowRequest(conn.RemoteAddr().String()) {
-			conn.WriteMessage(websocket.TextMessage, []byte("⛔ Too many messages, slow down!"))
+			conn.WriteMessage(websocket.TextMessage, []byte("Too many messages, slow down!"))
 			continue
 		}
 
