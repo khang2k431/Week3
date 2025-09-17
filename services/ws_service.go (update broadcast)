@@ -1,0 +1,52 @@
+package services
+
+import (
+	"log"
+	"sync"
+	"week3-chat-app/internal/pubsub"
+
+	"github.com/gorilla/websocket"
+)
+
+var (
+	connections = make(map[string]*websocket.Conn)
+	mu          sync.Mutex
+)
+
+func RegisterConnection(userID string, conn *websocket.Conn) {
+	mu.Lock()
+	connections[userID] = conn
+	mu.Unlock()
+	log.Println("User connected:", userID)
+
+	// Lắng nghe message từ client
+	go listenMessages(userID, conn)
+}
+
+func listenMessages(userID string, conn *websocket.Conn) {
+	defer func() {
+		mu.Lock()
+		delete(connections, userID)
+		mu.Unlock()
+		conn.Close()
+		log.Println("User disconnected:", userID)
+	}()
+
+	for {
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			break
+		}
+		// Gửi qua Redis Pub/Sub thay vì chỉ broadcast local
+		pubsub.PublishMessage(userID, string(msg))
+	}
+}
+
+// Hàm này được gọi khi nhận message từ Redis Pub/Sub
+func BroadcastFromPubSub(message string) {
+	mu.Lock()
+	defer mu.Unlock()
+	for _, conn := range connections {
+		conn.WriteMessage(websocket.TextMessage, []byte(message))
+	}
+}
